@@ -15,11 +15,7 @@ BazCore.header({
                 <img src="{{links.images(assets.get('branding').getCodes()[3].getContent())}}" data-rjs="3" alt="Bazaari Logo" style="height:{{assets.get('branding').getCodes()[5].getContent()}}px">
             </div>
             <div id="{{componentId}}-regular" hidden>
-                {% if api is defined %}
-                    <p class="login-box-msg text-sm font-weight-bold">Register new client for API {{api['name']}}</p>
-                {% else %}
-                    <p class="login-box-msg text-sm font-weight-bold">Register new account for application {{appName|lower}}</p>
-                {% endif %}
+                <p class="login-box-msg text-sm font-weight-bold">Register new account for application {{appName|lower}}</p>
                 <div id="{{componentId}}-form">
                     {% if api is not defined %}
                         {{adminltetags.useTag('fields',
@@ -59,46 +55,12 @@ BazCore.header({
                             'fieldGroupPostAddonIcon'               : 'envelope'
                         ]
                     )}}
-                    {% if api is defined %}
-                        <div class="row mt-2">
-                            <div class="col-md-4">
-                                {{adminltetags.useTag('fields',
-                                    [
-                                        'componentId'                           : componentId,
-                                        'sectionId'                             : 'form',
-                                        'fieldId'                               : 'device_id',
-                                        'fieldLabel'                            : false,
-                                        'fieldType'                             : 'checkbox',
-                                        'fieldCheckboxType'                     : 'success',
-                                        'fieldCheckboxLabel'                    : 'Is Device?',
-                                        'fieldCheckboxAdditionClass'            : 'text-sm text-uppercase'
-                                    ]
-                                )}}
-                            </div>
-                            <div class="col d-none">
-                                {{adminltetags.useTag('fields',
-                                    [
-                                        'componentId'                           : componentId,
-                                        'sectionId'                             : 'form',
-                                        'fieldId'                               : 'forceRegen',
-                                        'fieldLabel'                            : false,
-                                        'fieldType'                             : 'checkbox',
-                                        'fieldCheckboxType'                     : 'success',
-                                        'fieldCheckboxLabel'                    : 'Force Revoke & Regenerate?',
-                                        'fieldCheckboxAdditionClass'            : 'text-sm text-uppercase'
-                                    ]
-                                )}}
-                            </div>
-                        </div>
-                    {% endif %}
                     <div class="row mt-2">
-                        {% if api is not defined %}
-                            <div class="col mt-2">
-                                <a class="text-info" href="{{links.url('auth')}}">
-                                    <span>Back to login</span>
-                                </a>
-                            </div>
-                        {% endif %}
+                        <div class="col mt-2">
+                            <a class="text-info" href="{{links.url('auth')}}">
+                                <span>Back to login</span>
+                            </a>
+                        </div>
                         <div class="col">
                             <button id="{{componentId}}-form-register" type="button" class="btn btn-info float-right">
                                 <i class="fa fa-cog fa-spin login-spinner" hidden></i>
@@ -112,51 +74,16 @@ BazCore.header({
         </div>
     </div>
 </div>
-{% if api is defined %}
-    {% set api = json_encode(api, 16) %}
-{% else %}
-    {% set api = json_encode([]) %}
-{% endif %}
-{% if client is defined %}
-    {% set client = json_encode(client, 16) %}
-{% else %}
-    {% set client = json_encode([]) %}
-{% endif %}
 <script>
 /*global BazCore */
 $(document).ready(function() {
-    var isRegister, isApi, api, client, refresh;
     $('#{{componentId}}-regular').attr('hidden', false).addClass('animated fadeIn');
 
-    if ($('#{{componentId}}-form-register').length > 0) {
-        isRegister = true;
-        isApi = false;
+    $('#{{componentId}}-form-first_name').focus();
 
-        api = JSON.parse('{{api}}');
-        if (Object.keys(api).length > 0 && api.id) {
-            isApi = true;
-        }
-
-        if (isApi) {
-            $('#{{componentId}}-form-email').focus();
-        } else {
-            $('#{{componentId}}-form-first_name').focus();
-        }
-
-        BazCore.footer({
-            loadFooterAt : 'register'
-        });
-    } else {
-        isRegister = false;
-        isApi = false;
-        api = JSON.parse('{{api}}');
-        client = JSON.parse('{{client}}');
-        refresh = '{{refresh}}';
-
-        BazCore.footer({
-            loadFooterAt : 'authorize'
-        });
-    }
+    BazCore.footer({
+        loadFooterAt : 'register'
+    });
 
     // Slideshow
     $('body').vegas({
@@ -184,73 +111,22 @@ $(document).ready(function() {
         $('.login-spinner').attr('hidden', false);
 
         postData = { };
-        if (isRegister) {
-            $('#{{componentId}}-form-register').attr('disabled', true);
-            postData['email'] = $('#{{componentId}}-form-email').val().trim();
+        $('#{{componentId}}-form-register').attr('disabled', true);
+        postData['email'] = $('#{{componentId}}-form-email').val().trim();
 
-            if (!isApi) {
-                url = '{{links.url("register/registerNewAccount")}}';
-                postData['first_name'] = $('#{{componentId}}-form-first_name').val().trim();
-                postData['last_name'] = $('#{{componentId}}-form-last_name').val().trim();
-            } else if (isApi) {
-                url = '{{links.url("register/apiAddNewClient")}}';
-                postData['api_id'] = api['id'];
-                postData['device_id'] = '0';
-                if ($('#{{componentId}}-form-device_id')[0].checked === true) {
-                    postData['device_id'] = '1';
-                }
-                if ($('#{{componentId}}-form-forceRegen')[0].checked === true) {
-                    postData['forceRegen'] = '1';
-                }
-            }
-        } else if ((typeof client === 'object' && Object.keys(client).length > 0) ||
-                   refresh == true
-        ) {
-            url = '{{links.url("register/apiClient")}}';
-            postData['client_id'] = $('#{{componentId}}-form-client_id').val().trim();
-            postData['client_secret'] = $('#{{componentId}}-form-client_secret').val().trim();
-            if (refresh != true) {
-                postData['grant_type'] = 'authorization_code';
-                postData['redirect_uri'] = $('#{{componentId}}-form-redirect_uri').val().trim();
-                postData['code'] = $('#{{componentId}}-form-code').val().trim();
-            } else {
-                postData['grant_type'] = 'refresh_token';
-                postData['refresh'] = true;
-                postData['refresh_token'] = $('#{{componentId}}-form-refresh_token_input').val().trim();
-            }
-        } else {
-            window.location = api['authorization_url'];
-        }
-
+        url = '{{links.url("register/registerNewAccount")}}';
+        postData['first_name'] = $('#{{componentId}}-form-first_name').val().trim();
+        postData['last_name'] = $('#{{componentId}}-form-last_name').val().trim();
         postData[$('#security-token').attr('name')] = $('#security-token').val();
     }
 
-    if (isRegister) {
-        $('#{{componentId}}-form-register')
-            .click(function(e) {
-                e.preventDefault();
-                thisButton = this;
-                getAjaxUrlData();
-                runAjax();
-            });
-    } else {
-        if ($('#{{componentId}}-form-authorize').length > 0) {
-            $('#{{componentId}}-form-authorize')
-                .click(function(e) {
-                    e.preventDefault();
-                    thisButton = this;
-                    getAjaxUrlData();
-                });
-        } else if ($('#{{componentId}}-form-request').length > 0) {
-            $('#{{componentId}}-form-request')
-                .click(function(e) {
-                    e.preventDefault();
-                    thisButton = this;
-                    getAjaxUrlData();
-                    runAjax();
-                });
-        }
-    }
+    $('#{{componentId}}-form-register')
+        .click(function(e) {
+            e.preventDefault();
+            thisButton = this;
+            getAjaxUrlData();
+            runAjax();
+        });
 
     function runAjax() {
         $.ajax({
@@ -275,11 +151,6 @@ $(document).ready(function() {
                                     success(response);
                                 } else if (response.responseCode == '1') {
                                     $('.login-box-msg').text(response.responseMessage);
-                                    if (isApi) {
-                                        if (response.responseMessage.includes('force')) {
-                                            $('#{{componentId}}-form-forceRegen').parents('.col').removeClass('d-none');
-                                        }
-                                    }
                                     failed(response);
                                 }
 
@@ -314,83 +185,27 @@ $(document).ready(function() {
             $('.login-box-msg').removeClass('fadeIn').addClass('text-danger animated fadeIn');
             $('#{{componentId}}-form :input').prop('disabled', false);
             $('#{{componentId}}-form :input').not('.token').val('');
-            if (isApi) {
-                $('#{{componentId}}-form-email').focus();
-                $('#{{componentId}}-form-device_id')[0].checked = false;
-            } else {
-                $('#{{componentId}}-form-first_name').focus();
-            }
-
+            $('#{{componentId}}-form-first_name').focus();
             $('#{{componentId}}-form-register').attr('disabled', false);
 
             setTimeout(function () {
                 $('.login-box-msg').removeClass('text-danger text-success animated fadeIn');
-
-                if (isApi) {
-                    $('.login-box-msg').text('Register new client for API ' + api['name']);
-                } else {
-                    $('.login-box-msg').text('Register new account for application {{appName|lower}}');
-                }
-
+                $('.login-box-msg').text('Register new account for application {{appName|lower}}');
                 $('.login-box-msg').addClass('animated fadeIn');
             }, 5000);
         }
     }
 
     function success(response) {
-        if (!isApi) {
-            if (typeof client === 'object' && Object.keys(client).length > 0) {
-                if (response.responseData) {
-                    $('#codes').removeClass('d-none');
-                    $('#code').addClass('d-none');
-                    $('#client-info-input').addClass('d-none');
-                    $('.login-spinner').attr('hidden', true);
-                    $('#{{componentId}}-form-request').attr('hidden', true);
-                    $('#{{componentId}}-form-client_id, #{{componentId}}-form-client_secret').attr('disabled', true);
-                    $('#{{componentId}}-form-expires_in').val(response.responseData.expires_in);
-                    $('#{{componentId}}-form-token_type').val(response.responseData.token_type);
-                    $('#{{componentId}}-form-access_token').val(response.responseData.access_token);
-                    $('#{{componentId}}-form-refresh_token').val(response.responseData.refresh_token);
-                }
-            } else if (refresh == true) {
-                    $('#codes').removeClass('d-none');
-                    $('#client-info-input').addClass('d-none');
-                    $('#refresh-token-input').addClass('d-none');
-                    $('.login-spinner').attr('hidden', true);
-                    $('#{{componentId}}-form-request').attr('hidden', true);
-                    $('#{{componentId}}-form-client_id, #{{componentId}}-form-client_secret').attr('disabled', true);
-                    $('#{{componentId}}-form-request_token_input').attr('disabled', true);
-                    $('#{{componentId}}-form-expires_in').val(response.responseData.expires_in);
-                    $('#{{componentId}}-form-token_type').val(response.responseData.token_type);
-                    $('#{{componentId}}-form-access_token').val(response.responseData.access_token);
-                    $('#{{componentId}}-form-refresh_token').val(response.responseData.refresh_token);
-            } else {
-                setTimeout(function() {
-                    $('.login-spinner').attr('hidden', true);
-
-                    if (response.redirectUrl) {
-                        window.location = response.redirectUrl;
-                    } else {
-                        window.location = '/{{appRoute}}/';
-                    }
-                }, 1500);
-            }
-        } else {
+        setTimeout(function() {
             $('.login-spinner').attr('hidden', true);
-            $('.login-box-msg').removeClass('fadeIn').addClass('text-success animated fadeIn');
-            $('#{{componentId}}-form :input').prop('disabled', false);
-            $('#{{componentId}}-form :input').not('.token').val('');
-            $('#{{componentId}}-form-email').focus();
-            $('#{{componentId}}-form-device_id')[0].checked = false;
-            $('#{{componentId}}-form-forceRegen')[0].checked = false;
-            $('#{{componentId}}-form-forceRegen').parents('.col').addClass('d-none');
 
-            setTimeout(function () {
-                $('.login-box-msg').removeClass('text-danger text-success animated fadeIn');
-                $('.login-box-msg').text('Register new client for API ' + api['name']);
-                $('.login-box-msg').addClass('animated fadeIn');
-            }, 5000);
-        }
+            if (response.redirectUrl) {
+                window.location = response.redirectUrl;
+            } else {
+                window.location = '/{{appRoute}}/';
+            }
+        }, 1500);
     }
 });
 </script>
