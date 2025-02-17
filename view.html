@@ -163,37 +163,21 @@ $(document).ready(function() {
     }
 
     function failed(response) {
-        if (typeof client === 'object' && Object.keys(client).length > 0) {
-            $('#{{componentId}}-form-client_id').attr('disabled', false);
-            $('#{{componentId}}-form-client_secret').attr('disabled', false);
-            $('.login-spinner').attr('hidden', true);
-            $('#{{componentId}}-form-request').attr('disabled', false);
-            $('#{{componentId}}-form-client_id').focus();
-            $('.login-box-msg').removeClass('fadeIn').addClass('text-danger animated fadeIn');
-            setTimeout(function () {
-                $('.login-box-msg').removeClass('text-danger text-success animated fadeIn');
-
-                $('.login-box-msg').text('Client authorized for ' + api['name']);
-
-                $('.login-box-msg').addClass('animated fadeIn');
-            }, 5000);
-        } else {
-            if (response.redirectUrl) {
-                window.location = response.redirectUrl;
-            }
-            $('.login-spinner').attr('hidden', true);
-            $('.login-box-msg').removeClass('fadeIn').addClass('text-danger animated fadeIn');
-            $('#{{componentId}}-form :input').prop('disabled', false);
-            $('#{{componentId}}-form :input').not('.token').val('');
-            $('#{{componentId}}-form-first_name').focus();
-            $('#{{componentId}}-form-register').attr('disabled', false);
-
-            setTimeout(function () {
-                $('.login-box-msg').removeClass('text-danger text-success animated fadeIn');
-                $('.login-box-msg').text('Register new account for application {{appName|lower}}');
-                $('.login-box-msg').addClass('animated fadeIn');
-            }, 5000);
+        if (response.redirectUrl) {
+            window.location = response.redirectUrl;
         }
+        $('.login-spinner').attr('hidden', true);
+        $('.login-box-msg').removeClass('fadeIn').addClass('text-danger animated fadeIn');
+        $('#{{componentId}}-form :input').prop('disabled', false);
+        $('#{{componentId}}-form :input').not('.token').val('');
+        $('#{{componentId}}-form-first_name').focus();
+        $('#{{componentId}}-form-register').attr('disabled', false);
+
+        setTimeout(function () {
+            $('.login-box-msg').removeClass('text-danger text-success animated fadeIn');
+            $('.login-box-msg').text('Register new account for application {{appName|lower}}');
+            $('.login-box-msg').addClass('animated fadeIn');
+        }, 5000);
     }
 
     function success(response) {
