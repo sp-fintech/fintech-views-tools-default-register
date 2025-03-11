@@ -1,7 +1,7 @@
 {
 	"name" : "Register",
-	"display_name" : "SP Framework Fintech Register View",
-	"description" : "<p>SP Framework Fintech Register View<br></p>",
+	"display_name" : "Fintech Register View",
+	"description" : "<p>Fintech Register View</p>",
 	"module_type" : "views",
 	"app_type" : "fintech",
 	"category" : "tools",
